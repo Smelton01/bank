@@ -11,7 +11,7 @@ A backend focused web service designed with inspiration from the [Backend Master
 ## Requirements
 
 - [GO](https://go.dev/) version 1.18 or higher
-- [Docker](<[Docker](https://www.docker.com/)>)
+- [Docker](https://www.docker.com/)
 - [Golang Migrate](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate)
 - [Sqlc](https://github.com/kyleconroy/sqlc#installation)
 - [Gomock](https://github.com/golang/mock)

@@ -4,8 +4,39 @@ services:
     image: postgres:14.5-alpine
     container_name: postgres14
     restart: always
+    networks:
+      - database
+    user: root
     environment:
-      - POSTGRES_USER=root
+      - POSTGRES_USER÷=root
       - POSTGRES_PASSWORD=root
+      # - PGUSER=root
     ports:
       - "5432:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  migrate:
+    image: migrate/migrate
+    networks:
+      - database
+    volumes:
+      - ./db:/db
+    command:
+      [
+        "-path",
+        "db/migration",
+        "-database",
+        "postgres://root:root@localhost:5432/bank?sslmode=disable",
+        "up",
+      ]
+    links:
+      - postgres14
+    depends_on:
+      - postgres14
+
+networks:
+  database:
+volumes:
+  db:
+    driver: local

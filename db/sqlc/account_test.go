@@ -12,70 +12,74 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreateAccount(t *testing.T) {
-	createRandomAcc(t)
+type AccountSuite struct {
+	MainSuite
 }
 
-func TestGetAccount(t *testing.T) {
-	want := createRandomAcc(t)
-	got, err := testQueries.GetAccount(context.Background(), want.ID)
+func (a *AccountSuite) TestCreateAccount() {
+	a.createRandomAcc(a.T())
+}
+
+func (a *AccountSuite) TestGetAccount(t *testing.T) {
+	want := a.createRandomAcc(t)
+	got, err := a.queries.GetAccount(context.Background(), want.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, got)
 
 	assert.Equal(t, want, got)
 }
 
-func TestDeleteAcc(t *testing.T) {
-	acc := createRandomAcc(t)
-	err := testQueries.DeleteAccount(context.Background(), acc.ID)
-	require.NoError(t, err)
+func (a *AccountSuite) TestDeleteAcc() {
+	acc := a.createRandomAcc(a.T())
+	err := a.queries.DeleteAccount(context.Background(), acc.ID)
+	require.NoError(a.T(), err)
 
-	acc2, err := testQueries.GetAccount(context.Background(), acc.ID)
-	require.Error(t, err)
-	require.EqualError(t, err, sql.ErrNoRows.Error())
-	require.Empty(t, acc2)
+	acc2, err := a.queries.GetAccount(context.Background(), acc.ID)
+	require.Error(a.T(), err)
+	require.EqualError(a.T(), err, sql.ErrNoRows.Error())
+	require.Empty(a.T(), acc2)
 
 }
 
-func TestListAccounts(t *testing.T) {
+func (a *AccountSuite) TestListAccounts() {
 	arg := ListAccountsParams{
 		Limit:  2,
 		Offset: 1,
 	}
-	_ = []Account{createRandomAcc(t), createRandomAcc(t), createRandomAcc(t)}
-	got, err := testQueries.ListAccounts(context.Background(), arg)
-	require.NoError(t, err)
+	_ = []Account{a.createRandomAcc(a.T()), a.createRandomAcc(a.T()), a.createRandomAcc(a.T())}
+	got, err := a.queries.ListAccounts(context.Background(), arg)
+	require.NoError(a.T(), err)
 
-	require.Len(t, got, 2)
+	require.Len(a.T(), got, 2)
 	for _, account := range got {
-		require.NotEmpty(t, account)
+		require.NotEmpty(a.T(), account)
 	}
 
 }
 
-func TestUpdateAcc(t *testing.T) {
-	acc1 := createRandomAcc(t)
+func (a *AccountSuite) TestUpdateAcc() {
+	acc1 := a.createRandomAcc(a.T())
 	arg := UpdateAccountParams{
 		ID:      acc1.ID,
 		Balance: util.RandomCash(),
 	}
-	acc2, err := testQueries.UpdateAccount(context.Background(), arg)
-	require.NoError(t, err)
-	require.NotEmpty(t, acc2)
+	acc2, err := a.queries.UpdateAccount(context.Background(), arg)
+	require.NoError(a.T(), err)
+	require.NotEmpty(a.T(), acc2)
 
-	require.NotEqual(t, acc1.Balance, acc2.Balance)
-	assert.Equal(t, arg.Balance, acc2.Balance)
-	assert.True(t, cmp.Equal(acc1, acc2, cmpopts.IgnoreFields(Account{}, "Balance")))
+	require.NotEqual(a.T(), acc1.Balance, acc2.Balance)
+	assert.Equal(a.T(), arg.Balance, acc2.Balance)
+	assert.True(a.T(), cmp.Equal(acc1, acc2, cmpopts.IgnoreFields(Account{}, "Balance")))
 
 }
 
-func createRandomAcc(t *testing.T) Account {
+func (a *AccountSuite) createRandomAcc(t *testing.T) Account {
 	arg := CreateAccountParams{
 		Owner:    util.RandomOwner(),
 		Balance:  util.RandomCash(),
 		Currency: util.RandomCurrency(),
 	}
-	acc, err := testQueries.CreateAccount(context.Background(), arg)
+	acc, err := a.queries.CreateAccount(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, acc)
 

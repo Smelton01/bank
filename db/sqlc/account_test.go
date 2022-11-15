@@ -10,27 +10,32 @@ import (
 	"github.com/smelton01/bank/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
 type AccountSuite struct {
 	MainSuite
 }
 
-func (a *AccountSuite) TestCreateAccount() {
-	a.createRandomAcc(a.T())
+func (s *AccountSuite) SetupSuite() {
+	s.MainSuite.SetupSuite()
 }
 
-func (a *AccountSuite) TestGetAccount(t *testing.T) {
-	want := a.createRandomAcc(t)
-	got, err := a.queries.GetAccount(context.Background(), want.ID)
-	require.NoError(t, err)
-	require.NotEmpty(t, got)
+func (a *AccountSuite) TestCreateAccount() {
+	a.createRandomAcc()
+}
 
-	assert.Equal(t, want, got)
+func (a *AccountSuite) TestGetAccount() {
+	want := a.createRandomAcc()
+	got, err := a.queries.GetAccount(context.Background(), want.ID)
+	a.Require().NoError(err)
+	a.Require().NotEmpty(got)
+
+	a.Equal(want, got)
 }
 
 func (a *AccountSuite) TestDeleteAcc() {
-	acc := a.createRandomAcc(a.T())
+	acc := a.createRandomAcc()
 	err := a.queries.DeleteAccount(context.Background(), acc.ID)
 	require.NoError(a.T(), err)
 
@@ -46,7 +51,7 @@ func (a *AccountSuite) TestListAccounts() {
 		Limit:  2,
 		Offset: 1,
 	}
-	_ = []Account{a.createRandomAcc(a.T()), a.createRandomAcc(a.T()), a.createRandomAcc(a.T())}
+	_ = []Account{a.createRandomAcc(), a.createRandomAcc(), a.createRandomAcc()}
 	got, err := a.queries.ListAccounts(context.Background(), arg)
 	require.NoError(a.T(), err)
 
@@ -58,7 +63,7 @@ func (a *AccountSuite) TestListAccounts() {
 }
 
 func (a *AccountSuite) TestUpdateAcc() {
-	acc1 := a.createRandomAcc(a.T())
+	acc1 := a.createRandomAcc()
 	arg := UpdateAccountParams{
 		ID:      acc1.ID,
 		Balance: util.RandomCash(),
@@ -73,22 +78,26 @@ func (a *AccountSuite) TestUpdateAcc() {
 
 }
 
-func (a *AccountSuite) createRandomAcc(t *testing.T) Account {
+func (a *MainSuite) createRandomAcc() Account {
 	arg := CreateAccountParams{
 		Owner:    util.RandomOwner(),
 		Balance:  util.RandomCash(),
 		Currency: util.RandomCurrency(),
 	}
 	acc, err := a.queries.CreateAccount(context.Background(), arg)
-	require.NoError(t, err)
-	require.NotEmpty(t, acc)
+	a.Require().NoError(err)
+	a.Require().NotEmpty(acc)
 
-	require.Equal(t, arg.Owner, acc.Owner)
-	require.Equal(t, arg.Balance, acc.Balance)
-	require.Equal(t, arg.Currency, acc.Currency)
+	a.Require().Equal(arg.Owner, acc.Owner)
+	a.Require().Equal(arg.Balance, acc.Balance)
+	a.Require().Equal(arg.Currency, acc.Currency)
 
-	require.NotZero(t, acc.ID)
-	require.NotZero(t, acc.CreatedAt)
+	a.Require().NotZero(acc.ID)
+	a.Require().NotZero(acc.CreatedAt)
 
 	return acc
+}
+
+func TestAccounts(t *testing.T) {
+	suite.Run(t, &AccountSuite{})
 }

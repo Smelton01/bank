@@ -11,7 +11,7 @@ import (
 
 const (
 	dbDriver = "postgres"
-	dbSource = "postgresql://root:root@localhost:5432/bank?sslmode=disable"
+	dbSource = "postgresql://postgres:root@localhost:5432/bank?sslmode=disable"
 )
 
 type MainSuite struct {
@@ -21,7 +21,7 @@ type MainSuite struct {
 	db      *sql.DB
 }
 
-func (s *MainSuite) SetUpMain() {
+func (s *MainSuite) SetupSuite() {
 	testDB, err := sql.Open(dbDriver, dbSource)
 	if err != nil {
 		log.Fatalf("could not connect to database: %s", err)
@@ -33,6 +33,10 @@ func (s *MainSuite) SetUpMain() {
 
 }
 
-func TestMain(m *testing.M) {
+func (s *MainSuite) TeardownSuite() {
+	log.Println("done!!!")
+}
 
+func TestMain(t *testing.T) {
+	suite.Run(t, &MainSuite{})
 }

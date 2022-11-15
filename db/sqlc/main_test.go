@@ -3,27 +3,40 @@ package db
 import (
 	"database/sql"
 	"log"
-	"os"
 	"testing"
 
 	_ "github.com/lib/pq"
+	"github.com/stretchr/testify/suite"
 )
 
 const (
 	dbDriver = "postgres"
-	dbSource = "postgresql://root:root@localhost:5432/bank?sslmode=disable"
+	dbSource = "postgresql://postgres:root@localhost:5432/bank?sslmode=disable"
 )
 
-var testQueries *Queries
-var testDB *sql.DB
+type MainSuite struct {
+	suite.Suite
 
-func TestMain(m *testing.M) {
-	var err error
-	testDB, err = sql.Open(dbDriver, dbSource)
+	queries *Queries
+	db      *sql.DB
+}
+
+func (s *MainSuite) SetupSuite() {
+	testDB, err := sql.Open(dbDriver, dbSource)
 	if err != nil {
 		log.Fatalf("could not connect to database: %s", err)
 	}
 
-	testQueries = New(testDB)
-	os.Exit(m.Run())
+	s.db = testDB
+	s.queries = New(testDB)
+	// os.Exit(m.Run())
+
+}
+
+func (s *MainSuite) TeardownSuite() {
+	log.Println("done!!!")
+}
+
+func TestMain(t *testing.T) {
+	suite.Run(t, &MainSuite{})
 }

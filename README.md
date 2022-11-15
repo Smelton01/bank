@@ -23,7 +23,7 @@ A backend focused web service designed with inspiration from the [Backend Master
   git clone https://github.com/Smelton01/bank
   cd bank
   ```
-- Start Postgres container
+- Create/Start Postgres container
   ```
   make postgres
   ```

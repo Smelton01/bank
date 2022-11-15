@@ -1,11 +1,39 @@
 version: "3.8"
 services:
-  postgres14:
+  postgres:
     image: postgres:14.5-alpine
-    container_name: postgres14
     restart: always
+    # networks:
+    #   - database
     environment:
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=root
+      POSTGRES_PASSWORD: root
     ports:
       - "5432:5432"
+    command: postgres -c log_destination=stderr -c log_statement=all -c log_connections=on -c log_disconnections=on
+    # volumes:
+    #   - db:/var/lib/postgresql/data
+
+  # migrate:
+  #   image: migrate/migrate
+  #   networks:
+  #     - database
+  #   volumes:
+  #     - ./db:/db
+  #   command:
+  #     [
+  #       "-path",
+  #       "db/migration",
+  #       "-database",
+  #       "postgres://postgres:root@localhost:5432/bank?sslmode=disable",
+  #       "up",
+  #     ]
+  #   links:
+  #     - postgres
+  #   depends_on:
+  #     - postgres
+
+networks:
+  database:
+volumes:
+  db:
+    driver: local

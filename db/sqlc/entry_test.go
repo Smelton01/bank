@@ -5,55 +5,67 @@ import (
 	"testing"
 
 	"github.com/smelton01/bank/util"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestCreateEntry(t *testing.T) {
-	createRandomEntry(t)
+type EntrySuite struct {
+	MainSuite
 }
 
-func TestGetEntry(t *testing.T) {
-	want := createRandomEntry(t)
-
-	got, err := testQueries.GetEntry(context.Background(), want.ID)
-	require.NoError(t, err)
-	require.NotEmpty(t, got)
-
-	require.Equal(t, want, got)
+func (s *EntrySuite) SetupSuite() {
+	s.MainSuite.SetupSuite()
 }
 
-func TestListEntries(t *testing.T) {
-	acc := createRandomEntry(t)
+func (s *EntrySuite) TestCreateEntry() {
+	s.createRandomEntry()
+}
+
+func (s *EntrySuite) TestGetEntry() {
+	want := s.createRandomEntry()
+
+	got, err := s.queries.GetEntry(context.Background(), want.ID)
+	s.Require().NoError(err)
+	s.Require().NotEmpty(got)
+
+	s.Require().Equal(want, got)
+}
+
+func (s *EntrySuite) TestListEntries() {
+	acc := s.createRandomEntry()
 	arg := ListEntriesParams{
 		AccountID: acc.AccountID,
 		Limit:     2,
 		Offset:    0,
 	}
-	got, err := testQueries.ListEntries(context.Background(), arg)
-	require.NoError(t, err)
+	got, err := s.queries.ListEntries(context.Background(), arg)
+	s.Require().NoError(err)
 
-	require.Len(t, got, 1)
+	s.Require().Len(got, 1)
 
 	for _, entry := range got {
-		require.NotEmpty(t, entry)
+		s.Require().NotEmpty(entry)
 	}
 }
 
-func createRandomEntry(t *testing.T) Entry {
-	acc := createRandomAcc(t)
+func (s *EntrySuite) createRandomEntry() Entry {
+	acc := s.createRandomAcc()
 	arg := CreateEntryParams{
 		AccountID: acc.ID,
 		Amount:    util.RandomInt(0, 1000),
 	}
-	entry, err := testQueries.CreateEntry(context.Background(), arg)
-	require.NoError(t, err)
-	require.NotEmpty(t, acc)
+	entry, err := s.queries.CreateEntry(context.Background(), arg)
+	s.Require().NoError(err)
+	s.Require().NotEmpty(acc)
 
-	require.Equal(t, arg.AccountID, entry.AccountID)
-	require.Equal(t, arg.Amount, entry.Amount)
+	s.Require().Equal(arg.AccountID, entry.AccountID)
+	s.Require().Equal(arg.Amount, entry.Amount)
 
-	require.NotZero(t, entry.ID)
-	require.NotZero(t, entry.CreatedAt)
+	s.Require().NotZero(entry.ID)
+	s.Require().NotZero(entry.CreatedAt)
 
 	return entry
+}
+
+func TestEntries(t *testing.T) {
+	suite.Run(t, &EntrySuite{})
 }

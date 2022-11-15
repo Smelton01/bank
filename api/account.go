@@ -1,6 +1,9 @@
 package api
 
 import (
+	"database/sql"
+	"errors"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,7 +12,7 @@ import (
 )
 
 type createAccountRequest struct {
-	Currency string `json:"currency" binding:"required,currency"`
+	Currency string `json:"currency" binding:"required,oneof= USD EUR"`
 }
 
 func (server *Server) createAccount(ctx *gin.Context) {
@@ -19,9 +22,7 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
-	// authPayload := ctx.MustGet(authorizationPayloadKey)//.(*token.Payload)
 	arg := db.CreateAccountParams{
-		// Owner:    authPayload.Username,
 		Currency: req.Currency,
 		Balance:  0,
 	}

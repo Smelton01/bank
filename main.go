@@ -7,22 +7,23 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/smelton01/bank/api"
 	db "github.com/smelton01/bank/db/sqlc"
-)
-
-const (
-	dbDriver = "postgres"
-	dbSource = "postgresql://postgres:root@localhost:5432/bank?sslmode=disable"
+	"github.com/smelton01/bank/util"
 )
 
 func main() {
-	conn, err := sql.Open(dbDriver, dbSource)
+	config, err := util.LoadConfig(".")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		log.Fatalf("could not connect to db: %v", err)
 	}
 	store := db.NewStore(conn)
 	server := api.NewServer(store)
 
-	if err := server.Start(":8080"); err != nil {
+	if err := server.Start(config.ServerAddress); err != nil {
 		log.Fatal(err)
 	}
 }

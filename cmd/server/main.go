@@ -1,16 +1,19 @@
-package main
+package server
 
 import (
 	"database/sql"
 	"log"
 
-	_ "github.com/lib/pq"
 	"github.com/smelton01/bank/api"
 	db "github.com/smelton01/bank/db/sqlc"
 	"github.com/smelton01/bank/util"
 )
 
 func main() {
+	StartServer()
+}
+
+func StartServer() {
 	config, err := util.LoadConfig(".")
 	if err != nil {
 		log.Fatal(err)
